@@ -97,9 +97,8 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: "Something went wrong" });
 });
 
-// ✅ Start server
+// ✅ Use Render’s dynamic port (do NOT bind to localhost)
 const PORT = process.env.PORT || 4000;
-console.log('Starting server...');
 app.listen(PORT, () => {
-    console.log(`🚀 Server is listening on http://localhost:${PORT}`);
+  console.log(`🚀 Server is listening on port ${PORT}`);
 });
