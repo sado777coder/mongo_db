@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Todo</title>
+</head>
+<body>
+  <form onsubmit="return false;"> <!-- prevent form reload -->
+    <label>todo manager</label>
+    <br>
+    <br>
+    <input id="add" type="text" placeholder="Enter a task">
+    <button type="button" onclick="mayAdd()">Add</button>
+    <br><br>
+  </form>
+
+  <div id="todoList"></div> <!-- where todos will appear -->
+
+  <script>
+  async function mayAdd() {
+    const input = document.getElementById('add');
+    const todoText = input.value.trim();
+    const todoList = document.getElementById('todoList');
+
+    if (todoText === '') {
+      alert('Please enter a task before adding!');
+      return;
+    }
+
+    // ✅ Send the new task to your Express backend
+    const response = await fetch('http://localhost:3000/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task: todoText })
+    });
+
+    if (!response.ok) {
+      alert('Error adding todo');
+      return;
+    }
+
+    const newTodo = await response.json();
+
+    // ✅ Display it in the browser
+    const todoItem = document.createElement('div');
+    todoItem.textContent = `${newTodo.id}. ${newTodo.task}`;
+    todoList.appendChild(todoItem);
+
+    input.value = '';
+  }
+</script>
+</body>
+</html>
