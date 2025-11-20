@@ -18,6 +18,17 @@ connectDb();
 app.use(express.json());
 app.use(logRequest);
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to my Todo API",
+    endpoints: {
+      getTodos: "/todos",
+      getSingleTodo: "/todos/:id",
+      filterCompleted: "/todos?completed=true"
+    }
+  });
+});
+
 console.log("✅ This is the REAL index.js you're running!");
 
 
