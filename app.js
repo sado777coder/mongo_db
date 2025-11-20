@@ -6,133 +6,143 @@ const errorHandler = require("./middlewares/errorHandler.js");
 const connectDb = require("./database/db.js");
 const Todo = require("./models/todomodel.js");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
-const corsOptinos = {
-  origin : `http://localhost:3000/todos`,
+
+// CORS
+const corsOptions = {
+  origin: "http://localhost:3000",
 };
 
-// ✅ Middleware
-app.use(cors());
+// Middleware
+app.use(cors(corsOptions));
 connectDb();
 app.use(express.json());
 app.use(logRequest);
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to my Todo API",
-    endpoints: {
-      getTodos: "/todos",
-      getSingleTodo: "/todos/:id",
-      filterCompleted: "/todos?completed=true"
-    }
-  });
-});
-
 console.log("✅ This is the REAL index.js you're running!");
 
 
-// ✅ Routes
+//  ROOT ROUTE (Landing Page)
+
+app.get("/", (req, res, next) => {
+  try {
+    res.sendFile(path.join(__dirname, "index.html"));
+  } catch (error) {
+    next(error);  
+  }
+});
+
+//  GET all todos + optional filter
+
 app.get("/todos", async (req, res, next) => {
   try {
     const { completed } = req.query;
+    let filter = {};
 
-let filter = {};
+    if (completed !== undefined) {
+      const value = completed.toLowerCase();
+      if (value === "true") filter.completed = true;
+      else if (value === "false") filter.completed = false;
+    }
 
-// Only apply filter if query exists
-if (completed !== undefined) {
-  // Normalize query to lowercase (e.g., TRUE, True → true)
-  const value = completed.toLowerCase();
-
-  if (value === "true") filter.completed = true;
-  else if (value === "false") filter.completed = false;
-}
-
- const todos = await Todo.find(filter);
-  res.status(200).json(todos);
+    const todos = await Todo.find(filter);
+    res.status(200).json(todos);
   } catch (error) {
-    next (error);
+    next(error);
   }
 });
+
+//  GET all completed todos
 
 app.get("/todos/completed", async (req, res, next) => {
   try {
-    const completed = await Todo.find({completed : true});
-  res.json(completed);
+    const completed = await Todo.find({ completed: true });
+    res.json(completed);
   } catch (error) {
-    
-    next (error)
+    next(error);
   }
+});
 
-})
+//  GET single todo
 
-// get single todo
 app.get("/todos/:id", async (req, res, next) => {
-try {
-   const todo = await Todo.findById(req.params.id);
- if (!todo) {
-   return res.status(404).json({message : "todo not fonud"});
-  };
-  res.status(200).json(todo);
-} catch (error) {
-  next (error);
-}
-});
-
-// create new todo
-app.post("/todos", validateTodo, async (req, res, next) => {
-  const {task, completed} = req.body;
-  const newTodo = new Todo({
-    task,
-    completed
-  });
-
-  await newTodo.save();
-
- try {
-   
-  res.status(201).json(newTodo);
- } catch (error) {
-
-  next (error);
- }
-});
- 
-// update todos
-app.patch("/todos/:id", validateTodo, async (req, res, next) => {
   try {
-    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body ,{
-      new : true
-    }) 
+    const todo = await Todo.findById(req.params.id);
 
     if (!todo) {
-   return res.status(404).json({message : "todo not fonud"});
-  };
+      return res.status(404).json({ message: "Todo not found" });
+    }
 
     res.status(200).json(todo);
   } catch (error) {
-    next (error);
+    next(error);
   }
 });
 
-app.delete("/todos/:id", async (req, res, next) => {
- try {
-   const todo = await Todo.findByIdAndDelete(req.params.id);
+//  CREATE new todo
 
-   if (!todo) {
-   return res.status(404).json({message : "todo not fonud"});
-  };
-  res.status(204).json({message : `Todo ${req.params.id} deleted`});
- } catch (error) {
+app.post("/todos", validateTodo, async (req, res, next) => {
+  try {
+    const { task, completed } = req.body;
 
-  next (error);
- }
+    const newTodo = new Todo({
+      task,
+      completed,
+    });
+
+    await newTodo.save();
+    res.status(201).json(newTodo);
+  } catch (error) {
+    next(error);
+  }
 });
 
-// ✅ Central error handler
+
+//  UPDATE todo
+
+app.patch("/todos/:id", validateTodo, async (req, res, next) => {
+  try {
+    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    res.status(200).json(todo);
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+//  DELETE todo
+
+app.delete("/todos/:id", async (req, res, next) => {
+  try {
+    const todo = await Todo.findByIdAndDelete(req.params.id);
+
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    res.status(204).json({ message: `Todo ${req.params.id} deleted` });
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+// Global Error Handler
+
 app.use(errorHandler);
 
-//  Render-specific fix: use the provided port & bind to 0.0.0.0
+
+//  Start Server (Render-compatible)
+
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
 

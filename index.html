@@ -1,123 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Todo App (Frontend)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f3f3f3;
-    }
-    h1 { text-align: center; }
-    #todo-list { margin-top: 20px; }
-    .todo {
-      background: white;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    button { margin-left: 10px; cursor: pointer; }
-    .completed { text-decoration: line-through; color: gray; }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo API</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 450px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        a:hover {
+            background: #45a049;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1> Todo API</h1>
+        <p>Your backend is live and running on Render.</p>
 
-  <h1>Todo App</h1>
+        <p>Explore your API:</p>
+        <a href="/todos">View All Todos</a>
+        <a href="/todos?completed=true">View Completed Todos</a>
+        <a href="/todos?completed=false">Uncompleted Todos</a>
 
-  <div>
-    <input id="taskInput" type="text" placeholder="Enter task..." />
-    <button onclick="addTodo()">Add</button>
-  </div>
-
-  <div style="margin-top: 20px;">
-    <button onclick="getTodos()">Show All</button>
-    <button onclick="getCompleted(true)">Completed</button>
-    <button onclick="getCompleted(false)">Active</button>
-  </div>
-
-  <div id="todo-list"></div>
-
-  <script>
-    const BASE_URL = "http://localhost:3000/todos";
-
-    // Fetch all todos
-    async function getTodos() {
-      const res = await fetch(BASE_URL);
-      const data = await res.json();
-      renderTodos(data);
-    }
-
-    // Filter by completed/active
-    async function getCompleted(value) {
-      const res = await fetch(`${BASE_URL}?completed=${value}`);
-      const data = await res.json();
-      renderTodos(data);
-    }
-
-    // Add a new todo
-    async function addTodo() {
-      const task = document.getElementById("taskInput").value;
-      if (!task) return alert("Task is required!");
-
-      const res = await fetch(BASE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task })
-      });
-
-      if (res.ok) getTodos();
-    }
-
-    // Update todo (toggle)
-    async function toggleComplete(id, currentValue) {
-      await fetch(`${BASE_URL}/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !currentValue })
-      });
-      getTodos();
-    }
-
-    // Delete todo
-    async function deleteTodo(id) {
-      await fetch(`${BASE_URL}/${id}`, { method: "DELETE" });
-      getTodos();
-    }
-
-    // Render todos on screen
-    function renderTodos(todos) {
-      const list = document.getElementById("todo-list");
-      list.innerHTML = "";
-
-      todos.forEach(todo => {
-        const div = document.createElement("div");
-        div.className = "todo";
-
-        div.innerHTML = `
-          <span class="${todo.completed ? 'completed' : ''}">
-            ${todo.id}. ${todo.task}
-          </span>
-          <div>
-            <button onclick="toggleComplete(${todo.id}, ${todo.completed})">
-              ${todo.completed ? "Undo" : "Complete"}
-            </button>
-            <button onclick="deleteTodo(${todo.id})" style="background:red; color:white;">
-              Delete
-            </button>
-          </div>
-        `;
-
-        list.appendChild(div);
-      });
-    }
-
-    // Load todos on page load
-    getTodos();
-  </script>
-
+        <p style="margin-top: 25px; font-size: 12px; color: #888;">
+            Built with Node.js, Express & MongoDB.
+        </p>
+    </div>
 </body>
 </html>
